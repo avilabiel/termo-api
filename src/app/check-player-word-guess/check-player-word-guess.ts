@@ -7,26 +7,40 @@ import LetterGuessStatus from "@/types/letter-guess-status";
 const DAY_WORD = "gripe";
 const MAX_GUESSES_PER_DAY = 6;
 
-export default async ({
-  word,
-  player,
-  playerRepository,
-}: {
-  word: Word;
-  player: Player;
-  playerRepository: PlayerRepository;
-}): Promise<GameResult> => {
-  await playerRepository.addGuessCountByUserId({ userId: player.id });
+export default class CheckPlayerWordGuess {
+  static async execute({
+    word,
+    player,
+    playerRepository,
+  }: {
+    word: Word;
+    player: Player;
+    playerRepository: PlayerRepository;
+  }): Promise<GameResult> {
+    await playerRepository.addGuessCountByUserId({ userId: player.id });
 
-  const playerGuesses = await playerRepository.getGuessCountByUserId({
-    userId: player.id,
-  });
+    const playerGuesses = await playerRepository.getGuessCountByUserId({
+      userId: player.id,
+    });
 
-  if (playerGuesses > MAX_GUESSES_PER_DAY) {
-    throw new Error("Player does not have more chances to guess");
+    if (playerGuesses > MAX_GUESSES_PER_DAY) {
+      throw new Error("Player does not have more chances to guess");
+    }
+
+    const didPlayerWin = word.toLowerCase() === DAY_WORD;
+
+    if (didPlayerWin) {
+      return this.buildPlayerWinGameResult({ playerGuesses });
+    }
+
+    return this.buildPlayerFailGameResult({ word, playerGuesses });
   }
 
-  if (word.toLowerCase() === DAY_WORD) {
+  private static buildPlayerWinGameResult({
+    playerGuesses,
+  }: {
+    playerGuesses: number;
+  }): GameResult {
     return {
       isGuessRight: true,
       letterGuessResults: [],
@@ -34,47 +48,47 @@ export default async ({
     };
   }
 
-  const letterGuessResults = word
-    .split("")
-    .map((letter, position) => buildLetterGuessResult({ letter, position }));
+  private static buildPlayerFailGameResult({
+    word,
+    playerGuesses,
+  }: {
+    word: Word;
+    playerGuesses: number;
+  }): GameResult {
+    const letterGuessResults = word
+      .split("")
+      .map((letter, position) =>
+        this.buildLetterGuessResult({ letter, position })
+      );
 
-  return {
-    isGuessRight: true,
-    letterGuessResults,
-    remainingGuesses: MAX_GUESSES_PER_DAY - playerGuesses,
-  };
-};
-
-/*
-letter: string;
-  status: LetterGuessStatus;
-  position: number;
-
-  LetterGuessStatus: POSITION_RIGHT,
-  POSITION_WRONG,
-  NOT_EXISTS,
-*/
-
-const buildLetterGuessResult = ({
-  letter,
-  position,
-}: {
-  letter: string;
-  position: number;
-}): LetterGuessResult => {
-  let status = LetterGuessStatus.NOT_EXISTS;
-
-  if (DAY_WORD.includes(letter)) {
-    status = LetterGuessStatus.POSITION_WRONG;
+    return {
+      isGuessRight: false,
+      letterGuessResults,
+      remainingGuesses: MAX_GUESSES_PER_DAY - playerGuesses,
+    };
   }
 
-  if (letter === DAY_WORD[position]) {
-    status = LetterGuessStatus.POSITION_RIGHT;
-  }
-
-  return {
+  private static buildLetterGuessResult({
     letter,
-    status,
     position,
-  };
-};
+  }: {
+    letter: string;
+    position: number;
+  }): LetterGuessResult {
+    let status = LetterGuessStatus.NOT_EXISTS;
+
+    if (DAY_WORD.includes(letter)) {
+      status = LetterGuessStatus.POSITION_WRONG;
+    }
+
+    if (letter === DAY_WORD[position]) {
+      status = LetterGuessStatus.POSITION_RIGHT;
+    }
+
+    return {
+      letter,
+      status,
+      position,
+    };
+  }
+}
