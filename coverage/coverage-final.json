@@ -1,0 +1,2 @@
+{"/Users/Gabriel/workspace/Personal/termo-api/src/app/sum.ts": {"path":"/Users/Gabriel/workspace/Personal/termo-api/src/app/sum.ts","statementMap":{"0":{"start":{"line":2,"column":2},"end":{"line":2,"column":27}},"1":{"start":{"line":1,"column":0},"end":{"line":1,"column":24}}},"fnMap":{"0":{"name":"sum","decl":{"start":{"line":1,"column":24},"end":{"line":1,"column":27}},"loc":{"start":{"line":1,"column":60},"end":{"line":3,"column":1}}}},"branchMap":{},"s":{"0":1,"1":1},"f":{"0":1},"b":{}}
+}
