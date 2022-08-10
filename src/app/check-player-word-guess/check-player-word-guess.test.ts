@@ -1,27 +1,7 @@
-import Player, { PlayerRepository } from "@/types/player";
+import PlayerRepositoryMemory from "@/externals/repositories/player-repository-memory";
+import Player from "@/types/player";
 import Word from "@/types/word";
 import CheckPlayerWordGuess from "./check-player-word-guess";
-
-class MockPlayerRepository implements PlayerRepository {
-  count: number = 0;
-
-  async addGuessCountByUserId({
-    userId: string,
-  }: {
-    userId: any;
-  }): Promise<void> {
-    this.count++;
-    return;
-  }
-
-  async getGuessCountByUserId({
-    userId: string,
-  }: {
-    userId: any;
-  }): Promise<number> {
-    return this.count;
-  }
-}
 
 describe("CheckPlayerWordGuess", () => {
   it("returns a valid game result when player still have chances to guess", async () => {
@@ -31,7 +11,7 @@ describe("CheckPlayerWordGuess", () => {
     const output = await CheckPlayerWordGuess.execute({
       word,
       player,
-      playerRepository: new MockPlayerRepository(),
+      playerRepository: new PlayerRepositoryMemory(),
     });
 
     expect(output).toStrictEqual({
@@ -74,7 +54,7 @@ describe("CheckPlayerWordGuess", () => {
     const output = await CheckPlayerWordGuess.execute({
       word,
       player,
-      playerRepository: new MockPlayerRepository(),
+      playerRepository: new PlayerRepositoryMemory(),
     });
 
     expect(output).toStrictEqual({
@@ -91,7 +71,7 @@ describe("CheckPlayerWordGuess", () => {
 
     const player: Player = { id: "token-1234-token", name: "Testevaldo" };
 
-    const mockPlayerRepository = new MockPlayerRepository();
+    const mockPlayerRepository = new PlayerRepositoryMemory();
 
     const firstGuess = await CheckPlayerWordGuess.execute({
       word: firstWord,
@@ -184,7 +164,7 @@ describe("CheckPlayerWordGuess", () => {
     try {
       const player: Player = { id: "token-1234-token", name: "Testevaldo" };
 
-      const mockPlayerRepository = new MockPlayerRepository();
+      const mockPlayerRepository = new PlayerRepositoryMemory();
 
       await CheckPlayerWordGuess.execute({
         word: "test1",
