@@ -10,17 +10,17 @@ const MAX_GUESSES_PER_DAY = 6;
 export default class CheckPlayerWordGuess {
   static async execute({
     word,
-    player,
+    userId,
     playerRepository,
   }: {
     word: Word;
-    player: Player;
+    userId: Player["id"];
     playerRepository: PlayerRepository;
   }): Promise<GameResult> {
-    await playerRepository.addGuessCountByUserId({ userId: player.id });
+    await playerRepository.addGuessCountByUserId({ userId });
 
     const playerGuesses = await playerRepository.getGuessCountByUserId({
-      userId: player.id,
+      userId,
     });
 
     if (playerGuesses > MAX_GUESSES_PER_DAY) {

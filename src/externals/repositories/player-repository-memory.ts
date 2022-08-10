@@ -18,6 +18,9 @@ export default class PlayerRepositoryMemory implements PlayerRepository {
     );
 
     countPlayer.count++;
+
+    console.log(this.countPlayers);
+
     return;
   }
 

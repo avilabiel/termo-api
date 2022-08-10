@@ -3,14 +3,15 @@ import Player from "@/types/player";
 import Word from "@/types/word";
 import CheckPlayerWordGuess from "./check-player-word-guess";
 
+const userId = "token-1234-token";
+
 describe("CheckPlayerWordGuess", () => {
   it("returns a valid game result when player still have chances to guess", async () => {
     const word: Word = "teste";
-    const player: Player = { id: "token-1234-token", name: "Testevaldo" };
 
     const output = await CheckPlayerWordGuess.execute({
       word,
-      player,
+      userId,
       playerRepository: new PlayerRepositoryMemory(),
     });
 
@@ -49,11 +50,10 @@ describe("CheckPlayerWordGuess", () => {
 
   it("returns a valid game result when player win", async () => {
     const word: Word = "gripe";
-    const player: Player = { id: "token-1234-token", name: "Testevaldo" };
 
     const output = await CheckPlayerWordGuess.execute({
       word,
-      player,
+      userId,
       playerRepository: new PlayerRepositoryMemory(),
     });
 
@@ -69,25 +69,23 @@ describe("CheckPlayerWordGuess", () => {
     const secondWord: Word = "aldos";
     const thirdWord: Word = "gripe";
 
-    const player: Player = { id: "token-1234-token", name: "Testevaldo" };
-
     const mockPlayerRepository = new PlayerRepositoryMemory();
 
     const firstGuess = await CheckPlayerWordGuess.execute({
       word: firstWord,
-      player,
+      userId,
       playerRepository: mockPlayerRepository,
     });
 
     const secondGuess = await CheckPlayerWordGuess.execute({
       word: secondWord,
-      player,
+      userId,
       playerRepository: mockPlayerRepository,
     });
 
     const thirdGuess = await CheckPlayerWordGuess.execute({
       word: thirdWord,
-      player,
+      userId,
       playerRepository: mockPlayerRepository,
     });
 
@@ -162,49 +160,47 @@ describe("CheckPlayerWordGuess", () => {
 
   it("throws an error when player does not have more chances for guesses", async () => {
     try {
-      const player: Player = { id: "token-1234-token", name: "Testevaldo" };
-
       const mockPlayerRepository = new PlayerRepositoryMemory();
 
       await CheckPlayerWordGuess.execute({
         word: "test1",
-        player,
+        userId,
         playerRepository: mockPlayerRepository,
       });
 
       await CheckPlayerWordGuess.execute({
         word: "test2",
-        player,
+        userId,
         playerRepository: mockPlayerRepository,
       });
 
       await CheckPlayerWordGuess.execute({
         word: "test3",
-        player,
+        userId,
         playerRepository: mockPlayerRepository,
       });
 
       await CheckPlayerWordGuess.execute({
         word: "test4",
-        player,
+        userId,
         playerRepository: mockPlayerRepository,
       });
 
       await CheckPlayerWordGuess.execute({
         word: "test5",
-        player,
+        userId,
         playerRepository: mockPlayerRepository,
       });
 
       await CheckPlayerWordGuess.execute({
         word: "test6",
-        player,
+        userId,
         playerRepository: mockPlayerRepository,
       });
 
       await CheckPlayerWordGuess.execute({
         word: "gripe",
-        player,
+        userId,
         playerRepository: mockPlayerRepository,
       });
     } catch (error: any) {
