@@ -5,7 +5,7 @@ const prisma = new PrismaClient({ log: ["query", "info"] });
 
 export default class PlayerRepositoryPrismaMySQL implements PlayerRepository {
   async create(player: Player): Promise<Player> {
-    const persistedPlayer = await prisma.player.create(player);
+    const persistedPlayer = await prisma.player.create({ data: { ...player } });
 
     return persistedPlayer;
   }
