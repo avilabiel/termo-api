@@ -7,7 +7,6 @@ Server.listen(port, () => {
 });
 
 // TODOS
-// 3. Apply Prisma
 // 4. Create MySQL Repository
 // 5. Use MySQL Repository as test repository
 

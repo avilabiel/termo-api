@@ -5,6 +5,9 @@
   "repository": "https://github.com/avilabiel/termo-api.git",
   "author": "Gabriel Ávila <avilabiel@gmail.com>",
   "license": "MIT",
+  "prisma": {
+    "schema": "src/externals/prisma/schema.prisma"
+  },
   "scripts": {
     "build": "rimraf -rf dist && ttsc -P tsconfig.json",
     "start": "node dist/index.js",
@@ -24,6 +27,7 @@
     "typescript-transform-paths": "^3.3.1"
   },
   "dependencies": {
+    "@prisma/client": "^4.2.1",
     "cpy-cli": "^4.1.0",
     "express": "^4.18.1",
     "rimraf": "^3.0.2"

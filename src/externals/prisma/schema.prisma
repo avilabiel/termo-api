@@ -3,6 +3,10 @@ datasource db {
   provider = "mysql"
 }
 
+generator client {
+  provider = "prisma-client-js"
+}
+
 model Player {
   id        String      @id     @default(uuid())
   name     String
