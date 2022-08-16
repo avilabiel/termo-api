@@ -7,8 +7,8 @@ Server.listen(port, () => {
 });
 
 // TODOS
-// 1. Fix Memory Repository
-// 2. Fix start-dev script
 // 3. Apply Prisma
 // 4. Create MySQL Repository
 // 5. Use MySQL Repository as test repository
+
+// 1. Fix Memory Repository

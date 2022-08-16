@@ -1,0 +1,10 @@
+datasource db {
+  url      = env("DATABASE_URL")
+  provider = "mysql"
+}
+
+model Player {
+  id        String      @id     @default(uuid())
+  name     String
+  createdAt DateTime @default(now())
+}
