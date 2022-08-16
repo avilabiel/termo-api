@@ -5,3 +5,4 @@ coverage/*
 /coverage
 
 .env
+.env.test
