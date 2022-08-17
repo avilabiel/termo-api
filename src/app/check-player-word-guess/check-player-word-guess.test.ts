@@ -1,239 +1,94 @@
-import PlayerRepositoryPrismaMySQL from "@/externals/repositories/player-repository-prisma-mysql";
-import PlayerRepositoryMemory from "@/externals/repositories/player-repository-memory";
+import Player, { PlayerRepository } from "@/types/player";
 import Word from "@/types/word";
-import CreatePlayer from "../create-player/create-player";
-import CheckPlayerWordGuess from "./check-player-word-guess";
+import GameResult from "@/types/game-result";
+import LetterGuessResult from "@/types/letter-guess-result";
+import LetterGuessStatus from "@/types/letter-guess-status";
 
-describe("CheckPlayerWordGuess", () => {
-  it("returns a valid game result when player still have chances to guess", async () => {
-    const word: Word = "teste";
+const DAY_WORD = "gripe";
+const MAX_GUESSES_PER_DAY = 6;
 
-    const persistedPlayer = await CreatePlayer.execute({
-      player: {
-        name: "Testevaldo",
-        count: 0,
-      },
-      playerRepository: new PlayerRepositoryPrismaMySQL(),
+export default class CheckPlayerWordGuess {
+  static async execute({
+    word,
+    userId,
+    playerRepository,
+  }: {
+    word: Word;
+    userId: Player["id"];
+    playerRepository: PlayerRepository;
+  }): Promise<GameResult> {
+    await playerRepository.addGuessCountByUserId({ userId });
+
+    const playerGuesses = await playerRepository.getGuessCountByUserId({
+      userId,
     });
 
-    const output = await CheckPlayerWordGuess.execute({
-      word,
-      userId: persistedPlayer.id,
-      playerRepository: new PlayerRepositoryPrismaMySQL(),
-    });
-
-    expect(output).toStrictEqual({
-      isGuessRight: false,
-      letterGuessResults: [
-        {
-          letter: "t",
-          position: 0,
-          status: "NOT_EXISTS",
-        },
-        {
-          letter: "e",
-          position: 1,
-          status: "POSITION_WRONG",
-        },
-        {
-          letter: "s",
-          position: 2,
-          status: "NOT_EXISTS",
-        },
-        {
-          letter: "t",
-          position: 3,
-          status: "NOT_EXISTS",
-        },
-        {
-          letter: "e",
-          position: 4,
-          status: "POSITION_RIGHT",
-        },
-      ],
-      remainingGuesses: 5,
-    });
-  });
-
-  it("returns a valid game result when player win", async () => {
-    const word: Word = "gripe";
-
-    const persistedPlayer = await CreatePlayer.execute({
-      player: {
-        name: "Testevaldo",
-        count: 0,
-      },
-      playerRepository: new PlayerRepositoryPrismaMySQL(),
-    });
-
-    const output = await CheckPlayerWordGuess.execute({
-      word,
-      userId: persistedPlayer.id,
-      playerRepository: new PlayerRepositoryPrismaMySQL(),
-    });
-
-    expect(output).toStrictEqual({
-      isGuessRight: true,
-      letterGuessResults: [],
-      remainingGuesses: 5,
-    });
-  });
-
-  it("returns game result when player guesses right in the 3rd guess", async () => {
-    const firstWord: Word = "teste";
-    const secondWord: Word = "aldos";
-    const thirdWord: Word = "gripe";
-
-    const persistedPlayer = await CreatePlayer.execute({
-      player: {
-        name: "Testevaldo",
-        count: 0,
-      },
-      playerRepository: new PlayerRepositoryPrismaMySQL(),
-    });
-
-    const firstGuess = await CheckPlayerWordGuess.execute({
-      word: firstWord,
-      userId: persistedPlayer.id,
-      playerRepository: new PlayerRepositoryPrismaMySQL(),
-    });
-
-    const secondGuess = await CheckPlayerWordGuess.execute({
-      word: secondWord,
-      userId: persistedPlayer.id,
-      playerRepository: new PlayerRepositoryPrismaMySQL(),
-    });
-
-    const thirdGuess = await CheckPlayerWordGuess.execute({
-      word: thirdWord,
-      userId: persistedPlayer.id,
-      playerRepository: new PlayerRepositoryPrismaMySQL(),
-    });
-
-    expect(firstGuess).toStrictEqual({
-      isGuessRight: false,
-      letterGuessResults: [
-        {
-          letter: "t",
-          position: 0,
-          status: "NOT_EXISTS",
-        },
-        {
-          letter: "e",
-          position: 1,
-          status: "POSITION_WRONG",
-        },
-        {
-          letter: "s",
-          position: 2,
-          status: "NOT_EXISTS",
-        },
-        {
-          letter: "t",
-          position: 3,
-          status: "NOT_EXISTS",
-        },
-        {
-          letter: "e",
-          position: 4,
-          status: "POSITION_RIGHT",
-        },
-      ],
-      remainingGuesses: 5,
-    });
-    expect(secondGuess).toStrictEqual({
-      isGuessRight: false,
-      letterGuessResults: [
-        {
-          letter: "a",
-          position: 0,
-          status: "NOT_EXISTS",
-        },
-        {
-          letter: "l",
-          position: 1,
-          status: "NOT_EXISTS",
-        },
-        {
-          letter: "d",
-          position: 2,
-          status: "NOT_EXISTS",
-        },
-        {
-          letter: "o",
-          position: 3,
-          status: "NOT_EXISTS",
-        },
-        {
-          letter: "s",
-          position: 4,
-          status: "NOT_EXISTS",
-        },
-      ],
-      remainingGuesses: 4,
-    });
-    expect(thirdGuess).toStrictEqual({
-      isGuessRight: true,
-      letterGuessResults: [],
-      remainingGuesses: 3,
-    });
-  });
-
-  it("throws an error when player does not have more chances for guesses", async () => {
-    try {
-      const persistedPlayer = await CreatePlayer.execute({
-        player: {
-          name: "Testevaldo",
-          count: 0,
-        },
-        playerRepository: new PlayerRepositoryPrismaMySQL(),
-      });
-
-      await CheckPlayerWordGuess.execute({
-        word: "test1",
-        userId: persistedPlayer.id,
-        playerRepository: new PlayerRepositoryPrismaMySQL(),
-      });
-
-      await CheckPlayerWordGuess.execute({
-        word: "test2",
-        userId: persistedPlayer.id,
-        playerRepository: new PlayerRepositoryPrismaMySQL(),
-      });
-
-      await CheckPlayerWordGuess.execute({
-        word: "test3",
-        userId: persistedPlayer.id,
-        playerRepository: new PlayerRepositoryPrismaMySQL(),
-      });
-
-      await CheckPlayerWordGuess.execute({
-        word: "test4",
-        userId: persistedPlayer.id,
-        playerRepository: new PlayerRepositoryPrismaMySQL(),
-      });
-
-      await CheckPlayerWordGuess.execute({
-        word: "test5",
-        userId: persistedPlayer.id,
-        playerRepository: new PlayerRepositoryPrismaMySQL(),
-      });
-
-      await CheckPlayerWordGuess.execute({
-        word: "test6",
-        userId: persistedPlayer.id,
-        playerRepository: new PlayerRepositoryPrismaMySQL(),
-      });
-
-      await CheckPlayerWordGuess.execute({
-        word: "gripe",
-        userId: persistedPlayer.id,
-        playerRepository: new PlayerRepositoryPrismaMySQL(),
-      });
-    } catch (error: any) {
-      expect(error.message).toEqual(
-        "Player does not have more chances to guess"
-      );
+    if (playerGuesses > MAX_GUESSES_PER_DAY) {
+      throw new Error("Player does not have more chances to guess");
     }
-  });
-});
+
+    const didPlayerWin = word.toLowerCase() === DAY_WORD;
+
+    if (didPlayerWin) {
+      return this.buildPlayerWinGameResult({ playerGuesses });
+    }
+
+    return this.buildPlayerFailGameResult({ word, playerGuesses });
+  }
+
+  private static buildPlayerWinGameResult({
+    playerGuesses,
+  }: {
+    playerGuesses: number;
+  }): GameResult {
+    return {
+      isGuessRight: true,
+      letterGuessResults: [],
+      remainingGuesses: MAX_GUESSES_PER_DAY - playerGuesses,
+    };
+  }
+
+  private static buildPlayerFailGameResult({
+    word,
+    playerGuesses,
+  }: {
+    word: Word;
+    playerGuesses: number;
+  }): GameResult {
+    const letterGuessResults = word
+      .split("")
+      .map((letter, position) =>
+        this.buildLetterGuessResult({ letter, position })
+      );
+
+    return {
+      isGuessRight: false,
+      letterGuessResults,
+      remainingGuesses: MAX_GUESSES_PER_DAY - playerGuesses,
+    };
+  }
+
+  private static buildLetterGuessResult({
+    letter,
+    position,
+  }: {
+    letter: string;
+    position: number;
+  }): LetterGuessResult {
+    let status = LetterGuessStatus.NOT_EXISTS;
+
+    if (DAY_WORD.includes(letter)) {
+      status = LetterGuessStatus.POSITION_WRONG;
+    }
+
+    if (letter === DAY_WORD[position]) {
+      status = LetterGuessStatus.POSITION_RIGHT;
+    }
+
+    return {
+      letter,
+      status,
+      position,
+    };
+  }
+}

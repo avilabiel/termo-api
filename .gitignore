@@ -3,6 +3,6 @@ dist
 coverage
 coverage/*
 /coverage
-
 .env
 .env.test
+
