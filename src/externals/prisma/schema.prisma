@@ -1,0 +1,15 @@
+datasource db {
+  url      = env("DATABASE_URL")
+  provider = "mysql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Player {
+  id        String      @id     @default(uuid())
+  name     String
+  count   Int
+  createdAt DateTime @default(now())
+}

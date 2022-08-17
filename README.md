@@ -20,4 +20,10 @@ yarn start-dev
 
 # Run tests
 yarn test
+
+# Run migrations in dev
+yarn migrate
+
+# Run migrations in test (before yarn test)
+yarn migrate:test
 ```

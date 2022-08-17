@@ -1,212 +1,94 @@
-import PlayerRepositoryMemory from "@/externals/repositories/player-repository-memory";
-import Player from "@/types/player";
+import Player, { PlayerRepository } from "@/types/player";
 import Word from "@/types/word";
-import CheckPlayerWordGuess from "./check-player-word-guess";
+import GameResult from "@/types/game-result";
+import LetterGuessResult from "@/types/letter-guess-result";
+import LetterGuessStatus from "@/types/letter-guess-status";
 
-const userId = "token-1234-token";
+const DAY_WORD = "gripe";
+const MAX_GUESSES_PER_DAY = 6;
 
-describe("CheckPlayerWordGuess", () => {
-  it("returns a valid game result when player still have chances to guess", async () => {
-    const word: Word = "teste";
+export default class CheckPlayerWordGuess {
+  static async execute({
+    word,
+    userId,
+    playerRepository,
+  }: {
+    word: Word;
+    userId: Player["id"];
+    playerRepository: PlayerRepository;
+  }): Promise<GameResult> {
+    await playerRepository.addGuessCountByUserId({ userId });
 
-    const output = await CheckPlayerWordGuess.execute({
-      word,
+    const playerGuesses = await playerRepository.getGuessCountByUserId({
       userId,
-      playerRepository: new PlayerRepositoryMemory(),
     });
 
-    expect(output).toStrictEqual({
-      isGuessRight: false,
-      letterGuessResults: [
-        {
-          letter: "t",
-          position: 0,
-          status: "NOT_EXISTS",
-        },
-        {
-          letter: "e",
-          position: 1,
-          status: "POSITION_WRONG",
-        },
-        {
-          letter: "s",
-          position: 2,
-          status: "NOT_EXISTS",
-        },
-        {
-          letter: "t",
-          position: 3,
-          status: "NOT_EXISTS",
-        },
-        {
-          letter: "e",
-          position: 4,
-          status: "POSITION_RIGHT",
-        },
-      ],
-      remainingGuesses: 5,
-    });
-  });
-
-  it("returns a valid game result when player win", async () => {
-    const word: Word = "gripe";
-
-    const output = await CheckPlayerWordGuess.execute({
-      word,
-      userId,
-      playerRepository: new PlayerRepositoryMemory(),
-    });
-
-    expect(output).toStrictEqual({
-      isGuessRight: true,
-      letterGuessResults: [],
-      remainingGuesses: 5,
-    });
-  });
-
-  it("returns game result when player guesses right in the 3rd guess", async () => {
-    const firstWord: Word = "teste";
-    const secondWord: Word = "aldos";
-    const thirdWord: Word = "gripe";
-
-    const mockPlayerRepository = new PlayerRepositoryMemory();
-
-    const firstGuess = await CheckPlayerWordGuess.execute({
-      word: firstWord,
-      userId,
-      playerRepository: mockPlayerRepository,
-    });
-
-    const secondGuess = await CheckPlayerWordGuess.execute({
-      word: secondWord,
-      userId,
-      playerRepository: mockPlayerRepository,
-    });
-
-    const thirdGuess = await CheckPlayerWordGuess.execute({
-      word: thirdWord,
-      userId,
-      playerRepository: mockPlayerRepository,
-    });
-
-    expect(firstGuess).toStrictEqual({
-      isGuessRight: false,
-      letterGuessResults: [
-        {
-          letter: "t",
-          position: 0,
-          status: "NOT_EXISTS",
-        },
-        {
-          letter: "e",
-          position: 1,
-          status: "POSITION_WRONG",
-        },
-        {
-          letter: "s",
-          position: 2,
-          status: "NOT_EXISTS",
-        },
-        {
-          letter: "t",
-          position: 3,
-          status: "NOT_EXISTS",
-        },
-        {
-          letter: "e",
-          position: 4,
-          status: "POSITION_RIGHT",
-        },
-      ],
-      remainingGuesses: 5,
-    });
-    expect(secondGuess).toStrictEqual({
-      isGuessRight: false,
-      letterGuessResults: [
-        {
-          letter: "a",
-          position: 0,
-          status: "NOT_EXISTS",
-        },
-        {
-          letter: "l",
-          position: 1,
-          status: "NOT_EXISTS",
-        },
-        {
-          letter: "d",
-          position: 2,
-          status: "NOT_EXISTS",
-        },
-        {
-          letter: "o",
-          position: 3,
-          status: "NOT_EXISTS",
-        },
-        {
-          letter: "s",
-          position: 4,
-          status: "NOT_EXISTS",
-        },
-      ],
-      remainingGuesses: 4,
-    });
-    expect(thirdGuess).toStrictEqual({
-      isGuessRight: true,
-      letterGuessResults: [],
-      remainingGuesses: 3,
-    });
-  });
-
-  it("throws an error when player does not have more chances for guesses", async () => {
-    try {
-      const mockPlayerRepository = new PlayerRepositoryMemory();
-
-      await CheckPlayerWordGuess.execute({
-        word: "test1",
-        userId,
-        playerRepository: mockPlayerRepository,
-      });
-
-      await CheckPlayerWordGuess.execute({
-        word: "test2",
-        userId,
-        playerRepository: mockPlayerRepository,
-      });
-
-      await CheckPlayerWordGuess.execute({
-        word: "test3",
-        userId,
-        playerRepository: mockPlayerRepository,
-      });
-
-      await CheckPlayerWordGuess.execute({
-        word: "test4",
-        userId,
-        playerRepository: mockPlayerRepository,
-      });
-
-      await CheckPlayerWordGuess.execute({
-        word: "test5",
-        userId,
-        playerRepository: mockPlayerRepository,
-      });
-
-      await CheckPlayerWordGuess.execute({
-        word: "test6",
-        userId,
-        playerRepository: mockPlayerRepository,
-      });
-
-      await CheckPlayerWordGuess.execute({
-        word: "gripe",
-        userId,
-        playerRepository: mockPlayerRepository,
-      });
-    } catch (error: any) {
-      expect(error.message).toEqual(
-        "Player does not have more chances to guess"
-      );
+    if (playerGuesses > MAX_GUESSES_PER_DAY) {
+      throw new Error("Player does not have more chances to guess");
     }
-  });
-});
+
+    const didPlayerWin = word.toLowerCase() === DAY_WORD;
+
+    if (didPlayerWin) {
+      return this.buildPlayerWinGameResult({ playerGuesses });
+    }
+
+    return this.buildPlayerFailGameResult({ word, playerGuesses });
+  }
+
+  private static buildPlayerWinGameResult({
+    playerGuesses,
+  }: {
+    playerGuesses: number;
+  }): GameResult {
+    return {
+      isGuessRight: true,
+      letterGuessResults: [],
+      remainingGuesses: MAX_GUESSES_PER_DAY - playerGuesses,
+    };
+  }
+
+  private static buildPlayerFailGameResult({
+    word,
+    playerGuesses,
+  }: {
+    word: Word;
+    playerGuesses: number;
+  }): GameResult {
+    const letterGuessResults = word
+      .split("")
+      .map((letter, position) =>
+        this.buildLetterGuessResult({ letter, position })
+      );
+
+    return {
+      isGuessRight: false,
+      letterGuessResults,
+      remainingGuesses: MAX_GUESSES_PER_DAY - playerGuesses,
+    };
+  }
+
+  private static buildLetterGuessResult({
+    letter,
+    position,
+  }: {
+    letter: string;
+    position: number;
+  }): LetterGuessResult {
+    let status = LetterGuessStatus.NOT_EXISTS;
+
+    if (DAY_WORD.includes(letter)) {
+      status = LetterGuessStatus.POSITION_WRONG;
+    }
+
+    if (letter === DAY_WORD[position]) {
+      status = LetterGuessStatus.POSITION_RIGHT;
+    }
+
+    return {
+      letter,
+      status,
+      position,
+    };
+  }
+}
