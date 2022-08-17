@@ -10,5 +10,6 @@ generator client {
 model Player {
   id        String      @id     @default(uuid())
   name     String
+  count   Int
   createdAt DateTime @default(now())
 }

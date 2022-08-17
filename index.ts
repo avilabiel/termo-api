@@ -7,7 +7,4 @@ Server.listen(port, () => {
 });
 
 // TODOS
-// 4. Create MySQL Repository
-// 5. Use MySQL Repository as test repository
-
-// 1. Fix Memory Repository
+// Clean up test db after all tests

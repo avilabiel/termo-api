@@ -15,6 +15,7 @@ module.exports = {
   moduleNameMapper: {
     "@/(.*)": "<rootDir>/src/$1",
   },
+  setupFilesAfterEnv: ["<rootDir>/setup-jest.ts"],
   modulePathIgnorePatterns: ["<rootDir>/dist"],
   testTimeout: 30000,
 };

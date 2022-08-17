@@ -10,19 +10,32 @@ export default class PlayerRepositoryPrismaMySQL implements PlayerRepository {
     return persistedPlayer;
   }
 
-  async addGuessCountByUserId({
-    userId: string,
-  }: {
-    userId: any;
-  }): Promise<void> {
-    return;
+  async addGuessCountByUserId({ userId }: { userId: any }): Promise<void> {
+    const persistedPlayer = await prisma.player.findUnique({
+      where: {
+        id: userId,
+      },
+    });
+
+    const updatedPlayer = await prisma.player.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        count: persistedPlayer.count + 1,
+      },
+    });
+
+    console.log({ updatedPlayer });
   }
 
-  async getGuessCountByUserId({
-    userId: string,
-  }: {
-    userId: any;
-  }): Promise<number> {
-    return 0;
+  async getGuessCountByUserId({ userId }: { userId: any }): Promise<number> {
+    const persistedPlayer = await prisma.player.findUnique({
+      where: {
+        id: userId,
+      },
+    });
+
+    return persistedPlayer.count;
   }
 }

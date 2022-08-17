@@ -1,18 +1,25 @@
+import PlayerRepositoryPrismaMySQL from "@/externals/repositories/player-repository-prisma-mysql";
 import PlayerRepositoryMemory from "@/externals/repositories/player-repository-memory";
-import Player from "@/types/player";
 import Word from "@/types/word";
+import CreatePlayer from "../create-player/create-player";
 import CheckPlayerWordGuess from "./check-player-word-guess";
-
-const userId = "token-1234-token";
 
 describe("CheckPlayerWordGuess", () => {
   it("returns a valid game result when player still have chances to guess", async () => {
     const word: Word = "teste";
 
+    const persistedPlayer = await CreatePlayer.execute({
+      player: {
+        name: "Testevaldo",
+        count: 0,
+      },
+      playerRepository: new PlayerRepositoryPrismaMySQL(),
+    });
+
     const output = await CheckPlayerWordGuess.execute({
       word,
-      userId,
-      playerRepository: new PlayerRepositoryMemory(),
+      userId: persistedPlayer.id,
+      playerRepository: new PlayerRepositoryPrismaMySQL(),
     });
 
     expect(output).toStrictEqual({
@@ -51,10 +58,18 @@ describe("CheckPlayerWordGuess", () => {
   it("returns a valid game result when player win", async () => {
     const word: Word = "gripe";
 
+    const persistedPlayer = await CreatePlayer.execute({
+      player: {
+        name: "Testevaldo",
+        count: 0,
+      },
+      playerRepository: new PlayerRepositoryPrismaMySQL(),
+    });
+
     const output = await CheckPlayerWordGuess.execute({
       word,
-      userId,
-      playerRepository: new PlayerRepositoryMemory(),
+      userId: persistedPlayer.id,
+      playerRepository: new PlayerRepositoryPrismaMySQL(),
     });
 
     expect(output).toStrictEqual({
@@ -69,24 +84,30 @@ describe("CheckPlayerWordGuess", () => {
     const secondWord: Word = "aldos";
     const thirdWord: Word = "gripe";
 
-    const mockPlayerRepository = new PlayerRepositoryMemory();
+    const persistedPlayer = await CreatePlayer.execute({
+      player: {
+        name: "Testevaldo",
+        count: 0,
+      },
+      playerRepository: new PlayerRepositoryPrismaMySQL(),
+    });
 
     const firstGuess = await CheckPlayerWordGuess.execute({
       word: firstWord,
-      userId,
-      playerRepository: mockPlayerRepository,
+      userId: persistedPlayer.id,
+      playerRepository: new PlayerRepositoryPrismaMySQL(),
     });
 
     const secondGuess = await CheckPlayerWordGuess.execute({
       word: secondWord,
-      userId,
-      playerRepository: mockPlayerRepository,
+      userId: persistedPlayer.id,
+      playerRepository: new PlayerRepositoryPrismaMySQL(),
     });
 
     const thirdGuess = await CheckPlayerWordGuess.execute({
       word: thirdWord,
-      userId,
-      playerRepository: mockPlayerRepository,
+      userId: persistedPlayer.id,
+      playerRepository: new PlayerRepositoryPrismaMySQL(),
     });
 
     expect(firstGuess).toStrictEqual({
@@ -160,48 +181,54 @@ describe("CheckPlayerWordGuess", () => {
 
   it("throws an error when player does not have more chances for guesses", async () => {
     try {
-      const mockPlayerRepository = new PlayerRepositoryMemory();
+      const persistedPlayer = await CreatePlayer.execute({
+        player: {
+          name: "Testevaldo",
+          count: 0,
+        },
+        playerRepository: new PlayerRepositoryPrismaMySQL(),
+      });
 
       await CheckPlayerWordGuess.execute({
         word: "test1",
-        userId,
-        playerRepository: mockPlayerRepository,
+        userId: persistedPlayer.id,
+        playerRepository: new PlayerRepositoryPrismaMySQL(),
       });
 
       await CheckPlayerWordGuess.execute({
         word: "test2",
-        userId,
-        playerRepository: mockPlayerRepository,
+        userId: persistedPlayer.id,
+        playerRepository: new PlayerRepositoryPrismaMySQL(),
       });
 
       await CheckPlayerWordGuess.execute({
         word: "test3",
-        userId,
-        playerRepository: mockPlayerRepository,
+        userId: persistedPlayer.id,
+        playerRepository: new PlayerRepositoryPrismaMySQL(),
       });
 
       await CheckPlayerWordGuess.execute({
         word: "test4",
-        userId,
-        playerRepository: mockPlayerRepository,
+        userId: persistedPlayer.id,
+        playerRepository: new PlayerRepositoryPrismaMySQL(),
       });
 
       await CheckPlayerWordGuess.execute({
         word: "test5",
-        userId,
-        playerRepository: mockPlayerRepository,
+        userId: persistedPlayer.id,
+        playerRepository: new PlayerRepositoryPrismaMySQL(),
       });
 
       await CheckPlayerWordGuess.execute({
         word: "test6",
-        userId,
-        playerRepository: mockPlayerRepository,
+        userId: persistedPlayer.id,
+        playerRepository: new PlayerRepositoryPrismaMySQL(),
       });
 
       await CheckPlayerWordGuess.execute({
         word: "gripe",
-        userId,
-        playerRepository: mockPlayerRepository,
+        userId: persistedPlayer.id,
+        playerRepository: new PlayerRepositoryPrismaMySQL(),
       });
     } catch (error: any) {
       expect(error.message).toEqual(

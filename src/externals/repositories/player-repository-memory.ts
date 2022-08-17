@@ -1,41 +1,52 @@
 import Player, { PlayerRepository } from "@/types/player";
 
-type CountPlayer = {
-  player: Player;
-  count: number;
-};
-
 export default class PlayerRepositoryMemory implements PlayerRepository {
-  private countPlayers: CountPlayer[] = [];
+  private players: Player[] = [];
+  private static instance: PlayerRepositoryMemory;
 
-  constructor() {
-    this.seed();
+  private constructor() {}
+
+  static getOrBuild() {
+    if (!this.instance) {
+      this.instance = new PlayerRepositoryMemory();
+    }
+
+    return this.instance;
+  }
+
+  async create(player: Player): Promise<Player> {
+    player.id = this.fakeId(10);
+    player.createdAt = new Date();
+
+    this.players.push(player);
+
+    return player;
   }
 
   async addGuessCountByUserId({ userId }: { userId: any }): Promise<void> {
-    const countPlayer = this.countPlayers.find(
-      (countPlayer) => countPlayer.player.id == userId
-    );
+    console.log({ players: this.players, userId });
 
-    countPlayer.count++;
+    const player = this.players.find((player) => player.id == userId);
 
-    console.log(this.countPlayers);
+    player.count++;
 
     return;
   }
 
   async getGuessCountByUserId({ userId }: { userId: string }): Promise<number> {
-    const countPlayer = this.countPlayers.find(
-      (countPlayer) => countPlayer.player.id == userId
-    );
+    const player = this.players.find((player) => player.id == userId);
 
-    return countPlayer.count;
+    return player.count;
   }
 
-  seed() {
-    this.countPlayers.push({
-      player: { id: "token-1234-token", name: "Testevaldo" },
-      count: 0,
-    });
+  private fakeId(length): string {
+    var result = "";
+    var characters =
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    var charactersLength = characters.length;
+    for (var i = 0; i < length; i++) {
+      result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return result;
   }
 }
