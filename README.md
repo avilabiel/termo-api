@@ -5,7 +5,7 @@ This repository aims to create a backend for Wordle game applying SOLID. All the
 ## Rules
 - There is a word in PT-BR to be guessed
 - Each player has 6 chances to guess
-- Player are identified by UUIDs
+- Players are identified by UUIDs
 
 ## Scripts
 ```
